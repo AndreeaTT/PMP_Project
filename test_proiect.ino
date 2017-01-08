@@ -8,7 +8,6 @@
 #define powerOffOn 0xFFA25D
 #define rotateLeft 0xFF22DD
 #define rotateRight 0xFFC23D
-#define startButton 0xFFB04F
 #define plus 0xFF629D
 #define minus 0xFFA857
 int RECV_PIN = 11;
@@ -25,6 +24,7 @@ int in4 = 7;
 int speedA = 0;
 int speedB = 0;
 int directionMovement = 0;
+bool isStateChange = true;
 
 //telecomanda
 IRrecv irrecv(RECV_PIN);
@@ -47,15 +47,20 @@ void setup() {
 void loop() {
  if (irrecv.decode(&auxResults)) {
       //Serial.println(auxResults.value,HEX);
+      isStateChange = true;
       irrecv.resume();
+ }
+ else{
+    isStateChange = false;
  }
 
  if (auxResults.value == front || auxResults.value == back || auxResults.value == left || auxResults.value == right || auxResults.value == powerOffOn || 
-     auxResults.value == repeat || auxResults.value == plus || auxResults.value == minus  || auxResults.value == rotateLeft || auxResults.value == rotateRight)
+     auxResults.value == repeat || auxResults.value == plus || auxResults.value == minus  || auxResults.value == rotateLeft || auxResults.value == rotateRight){
      results = auxResults;
+ }
+
  if (results.value == front){ 
  //ambele motoare merg inainte
- Serial.println("fata");
  speedA = 110;
  speedB = 110;
  directionMovement = 0;
@@ -69,7 +74,6 @@ void loop() {
  }
  
  if (results.value == back){
-  Serial.println("spate");
  speedA = 110;
  speedB = 110;
  directionMovement = 1;
@@ -97,19 +101,29 @@ void loop() {
  }
 
  if (results.value == plus){
-  Serial.println("plus");
- speedA += speedA > 160 ? 0 :30;
+ // Serial.println("plus");
+ if (isStateChange){
+ if (speedA != 0)
+    speedA += speedA > 160 ? 0 :30;
+ if (speedB != 0)
  speedB += speedB > 160 ? 0 :30;
+ }
  analogWrite(enA, speedA);
  analogWrite(enB, speedB);
+ Serial.println(speedA);
+ Serial.println(speedB);
  }
 
  if (results.value == minus){
- Serial.println("plus");
+// Serial.println("plus");
+ if (isStateChange){
  speedA -= speedA < 120 ? 0 :30;
  speedB -= speedB < 120 ? 0 :30;
+ }
  analogWrite(enA, speedA);
  analogWrite(enB, speedB);
+ Serial.println(speedA);
+ Serial.println(speedB);
  }
 
  if (results.value == rotateRight){
