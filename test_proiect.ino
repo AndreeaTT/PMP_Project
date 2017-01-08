@@ -5,9 +5,12 @@
 #define left 0xFF10EF   //4
 #define right 0xFF5AA5  //6
 #define repeat 0xFFFFFFFF  
-#define powerOff 0xFFA25D
+#define powerOffOn 0xFFA25D
+#define rotateLeft 0xFF22DD
+#define rotateRight 0xFFC23D
 #define startButton 0xFFB04F
-#define stopButton 0xFFE21D
+#define plus 0xFF629D
+#define minus 0xFFA857
 int RECV_PIN = 11;
 
 //primul motor 
@@ -19,10 +22,14 @@ int enB = 5;
 int in3 = 6;
 int in4 = 7;
 
+int speedA = 0;
+int speedB = 0;
+int directionMovement = 0;
+
 //telecomanda
 IRrecv irrecv(RECV_PIN);
 decode_results results;
-
+decode_results auxResults;
 
 void setup() {
 //pinii de la motoare setati ca si output
@@ -34,51 +41,119 @@ void setup() {
   pinMode(in3, OUTPUT);
   pinMode(in4, OUTPUT);
   irrecv.enableIRIn(); // Start the receiver
+  Serial.begin(9600);
 }
 
 void loop() {
- if (irrecv.decode(&results)) {
+ if (irrecv.decode(&auxResults)) {
+      //Serial.println(auxResults.value,HEX);
       irrecv.resume();
-  }
-  if (results.value == front){ 
+ }
+
+ if (auxResults.value == front || auxResults.value == back || auxResults.value == left || auxResults.value == right || auxResults.value == powerOffOn || 
+     auxResults.value == repeat || auxResults.value == plus || auxResults.value == minus  || auxResults.value == rotateLeft || auxResults.value == rotateRight)
+     results = auxResults;
+ if (results.value == front){ 
  //ambele motoare merg inainte
+ Serial.println("fata");
+ speedA = 110;
+ speedB = 110;
+ directionMovement = 0;
  digitalWrite(in3, HIGH);
  digitalWrite(in4, LOW);
- analogWrite(enB, 200);
+ analogWrite(enB, speedB);
  
  digitalWrite(in1, HIGH);
  digitalWrite(in2, LOW);
- analogWrite(enA, 200);
-  }
+ analogWrite(enA, speedA);
+ }
+ 
  if (results.value == back){
+  Serial.println("spate");
+ speedA = 110;
+ speedB = 110;
+ directionMovement = 1;
  digitalWrite(in3, LOW);
  digitalWrite(in4, HIGH);
- analogWrite(enB, 200);
+ analogWrite(enB, speedB);
 
  digitalWrite(in2, HIGH);
  digitalWrite(in1, LOW);
- analogWrite(enA, 200);
-  }
- if (results.value == left){
- analogWrite(enA, 100);
- delay(2000);
- analogWrite(enA, 200);
+ analogWrite(enA, speedA);
  }
- if (results.value == right){;
- analogWrite(enB, 100);
- delay(2000);
- analogWrite(enB,200);
  
+ if (results.value == left){
+   Serial.println("stanga");
+ analogWrite(enB, speedB / 2);
+ delay(2000);
+ analogWrite(enB, speedB);
  }
- if (results.value == powerOff){
+ 
+ if (results.value == right){
+  Serial.println("dreapta");
+ analogWrite(enA, speedA / 2);
+ delay(2000);
+ analogWrite(enA, speedA);
+ }
+
+ if (results.value == plus){
+  Serial.println("plus");
+ speedA += speedA > 160 ? 0 :30;
+ speedB += speedB > 160 ? 0 :30;
+ analogWrite(enA, speedA);
+ analogWrite(enB, speedB);
+ }
+
+ if (results.value == minus){
+ Serial.println("plus");
+ speedA -= speedA < 120 ? 0 :30;
+ speedB -= speedB < 120 ? 0 :30;
+ analogWrite(enA, speedA);
+ analogWrite(enB, speedB);
+ }
+
+ if (results.value == rotateRight){
+ if (directionMovement == 0){
+ digitalWrite(in2, HIGH);
+ digitalWrite(in1, LOW);
+ digitalWrite(in3, HIGH);
+ digitalWrite(in4, LOW);
+ }
+ else{
+ digitalWrite(in3, HIGH);
+ digitalWrite(in4, LOW);
+ digitalWrite(in1, LOW);
+ digitalWrite(in2, HIGH);
+ }
+ analogWrite(enA, speedA);
+ analogWrite(enB, speedB);
+ }
+
+ if (results.value == rotateLeft){
+ if (directionMovement == 0){
+ digitalWrite(in3, LOW);
+ digitalWrite(in4, HIGH);
+ digitalWrite(in1, HIGH);
+ digitalWrite(in2, LOW);
+ }
+ else{
+ digitalWrite(in3, LOW);
+ digitalWrite(in4, HIGH);
+ digitalWrite(in1, HIGH);
+ digitalWrite(in2, LOW);
+ }
+ analogWrite(enA, speedA);
+ analogWrite(enB, speedB);
+ }
+ 
+ if (results.value == powerOffOn){
  digitalWrite(in3, LOW);
  digitalWrite(in4, LOW); 
  digitalWrite(in2, LOW);
  digitalWrite(in1, LOW);
  digitalWrite(enA,LOW);
  digitalWrite(enB,LOW);
+ speedA = 0;
+ speedB = 0;
  }
- 
-  
-   }
-
+}
