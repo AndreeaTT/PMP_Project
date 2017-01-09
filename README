@@ -1,4 +1,6 @@
 Fisierul .docx contine documentatia proiectului.
 Cele doua fisiere .ino reprezinta codul proiectului.
 IRDecode.ino - detecteaza codurile hexa ale butoanelor unei telecomenzi
-test_protec.ino - codul sursa pentru deplasarea masinii(acest cod va fi incarcat pe placuta Arduino)
+test_protec.ino - codul sursa pentru deplasarea masinii(acest cod va fi incarcat pe placuta Arduino); actiunile implementate asupra 
+				  acesteia sunt: deplasarea inainte, deplasarea inapoi, virare la stanga, virare la dreapta, rotire stanga, rotire dreapta,
+				  accelerare si deccelerare.
